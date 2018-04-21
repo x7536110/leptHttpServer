@@ -1,0 +1,22 @@
+# depslib dependency file v1.0
+1524314120 source:/home/richard/Projects/test/main.cpp
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<errno.h>
+	<netinet/in.h>
+	<sys/stat.h>
+	<sys/types.h>
+	<pthread.h>
+	<sys/wait.h>
+	<unistd.h>
+	<sstream>
+	<iostream>
+	<string>
+	<vector>
+	<fstream>
+
+1524319260 source:/home/richard/Projects/test/epollAPI.cpp
+

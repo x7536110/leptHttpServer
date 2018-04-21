@@ -1,0 +1,7 @@
+#.gitignore
+*.cbp
+*.depend
+*.layout
+*.o
+*.O
+
