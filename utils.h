@@ -1,7 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 1024
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,6 +21,6 @@
 #include <fstream>
 
 using namespace std;
-
+extern string ROOT;
 
 #endif // UTIL_H
