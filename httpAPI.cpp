@@ -1,24 +1,24 @@
 #include "httpAPI.h"
 
-void handleAccept(int listenfd){
-    sockaddr_in clientAddr;
-    socklen_t clientLen=sizeof(clientAddr);
-    int connfd=Accept(listenfd,(sockaddr*)&clientAddr,&clientLen);
-    char buffer[BUFFER_SIZE];
-    memset(buffer,'\0',BUFFER_SIZE);
-    int msgLen=0;
-    if((msgLen=recv(connfd,buffer,BUFFER_SIZE,0))==-1){
-        cerr<<"Error handling incoming request"<<endl;
-        return;
-    }
-    string method;
-    string uri;
-    string version;
-    string content;
-    string responseheader;
-    getRequestHead(buffer,msgLen,method,uri,version);
-    do_response(connfd,method,uri,content,responseheader);
-}
+//void handleAccept(int listenfd){
+//    sockaddr_in clientAddr;
+//    socklen_t clientLen=sizeof(clientAddr);
+//    int connfd=Accept(listenfd,(sockaddr*)&clientAddr,&clientLen);
+//    char buffer[BUFFER_SIZE];
+//    memset(buffer,'\0',BUFFER_SIZE);
+//    int msgLen=0;
+//    if((msgLen=recv(connfd,buffer,BUFFER_SIZE,0))==-1){
+//        cerr<<"Error handling incoming request"<<endl;
+//        return;
+//    }
+//    string method;
+//    string uri;
+//    string version;
+//    string content;
+//    string responseheader;
+//    getRequestHead(buffer,msgLen,method,uri,version);
+//    do_response(connfd,method,uri,content,responseheader);
+//}
 void getRequestHead(char* buffer,int msgLen,string& method,string& uri,string& version){
     stringstream ss(string(buffer,buffer+msgLen));
     ss>>method;

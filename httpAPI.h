@@ -3,7 +3,7 @@
 
 #include "utils.h"
 #include "socketAPI.h"
-void handleAccept(int listenfd);
+//void handleAccept(int listenfd);
 void getRequestHead(char* buffer,int msgLen,string& method,string& uri,string& version);
 void do_response(int sockfd,string method,string uri,string& content,string& responseheader);
 void do_get_response(int sockfd,string method,string uri,string& content,string& responseheader);
