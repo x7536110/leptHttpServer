@@ -3,6 +3,8 @@
 
 #include "utils.h"
 #include "socketAPI.h"
+#define DYNAMIC false
+#define STATIC true
 //void handleAccept(int listenfd);
 void getRequestHead(char* buffer,int msgLen,string& method,string& uri,string& version);
 void do_response(int sockfd,string method,string uri,string& content,string& responseheader);

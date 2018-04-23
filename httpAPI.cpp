@@ -19,11 +19,18 @@
 //    getRequestHead(buffer,msgLen,method,uri,version);
 //    do_response(connfd,method,uri,content,responseheader);
 //}
+
 void getRequestHead(char* buffer,int msgLen,string& method,string& uri,string& version){
     stringstream ss(string(buffer,buffer+msgLen));
     ss>>method;
     ss>>uri;
     ss>>version;
+}
+bool parseStaticHead(string& uri,string& cgiRequest){
+    for(int i=0;i<uri.size();i++)
+        if(uri[i]=='?')
+            return DYNAMIC;
+    return STATIC;
 }
 void do_response(int sockfd,string method,string uri,string& content,string& responseheader){
     if(method=="GET"){
@@ -43,10 +50,24 @@ void do_response(int sockfd,string method,string uri,string& content,string& res
 void do_get_response(int sockfd,string method,string uri,string& content,string& responseheader){
     string contentType;
     string statusCode;
-    content=getContent(statusCode,uri,contentType);
-    responseheader=constructHeader(statusCode,content,contentType);
-    send(sockfd,responseheader.data(),responseheader.size(),0);
-    send(sockfd,content.data(),content.size(),0);
+    string cgiRequest;
+    char *emptylist[]={NULL};
+    if(parseStaticHead(uri,cgiRequest)){
+        content=getContent(statusCode,uri,contentType);
+        responseheader=constructHeader(statusCode,content,contentType);
+        send(sockfd,responseheader.data(),responseheader.size(),0);
+        send(sockfd,content.data(),content.size(),0);
+    }else{
+        if(fork()==0){
+            setenv("QUERY_STRING",uri.c_str(),1);
+            //content=
+            //responseheader=
+            execve(cgiRequest.c_str(),emptylist,environ);
+            send(sockfd,responseheader.data(),responseheader.size(),0);
+            send(sockfd,content.data(),content.size(),0);
+        }
+        wait(NULL);
+    }
 }
 void do_post_response(int sockfd,string method,string uri,string& content,string& responseheader){
 
@@ -62,23 +83,26 @@ string getContent(string &statusCode,string uri,string &contentType){
     parseContentType(filename,contentType);
     filebuf *fptr;
     char* buffer;
-    ifstream fin(filename,ios::binary);
+    ifstream fin(filename,ifstream::binary);
     fptr=fin.rdbuf();
-    if(!fin.is_open()){
+    if(!fin){
         statusCode="404 Not Found";
-        cerr<<"404 ERROR NO FILE NAMED "<<filename<<endl;
+        cerr<<"404 ERROR NO FILE NAMED "<<filename<<" CONTENT TYPE "<<contentType<<endl;
         return errorContent(404);
+    }else{
+        cerr<<"200 OK FILE FIND "<<filename<<" CONTENT TYPE "<<contentType<<endl;
     }
     string tmp;
-    string content;
     int filesize=fptr->pubseekoff(0,ios::end,ios::in);
     fptr->pubseekpos(0,ios::in);
     buffer=new char[filesize];
     fin.read(buffer,filesize);
-    content+=buffer;
+    string content;
+    content.assign(buffer,filesize);
     statusCode="200 OK";
     fin.close();
     delete []buffer;
+    cout<<"Filesize: "<<content.size()<<" byte ("<<content.size()/1024<<"KB)"<<endl;
     return content;
 }
 string errorContent(int errorCode){
@@ -109,6 +133,9 @@ void parseContentType(string filename,string& contentType){
     string tmpExtension=getExtent(filename);
     ifstream mimefile("mime.types");
     string line;
+    if(mimefile.is_open()==false){
+        cerr<<"MIME CONFIG ERROR"<<endl;
+    }
     while(getline(mimefile,line)){
         if(line[0]!='#'){
             stringstream lineStream(line);

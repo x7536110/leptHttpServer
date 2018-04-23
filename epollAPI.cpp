@@ -19,7 +19,9 @@ void add_event(int epollfd,int fd,int state){
     ev.events=state;
     ev.data.fd=fd;
     epoll_ctl(epollfd,EPOLL_CTL_ADD,fd,&ev);
+#ifdef DEBUG_LOG
     cout<<"Add events success, epoll fd= "<<epollfd<<endl;
+#endif // DEBUG_LOG
 }
 
 void handle_events(int epollfd,struct epoll_event *events,int num,int listenfd,string &content,string&responseheader){
@@ -44,7 +46,9 @@ void handle_accept(int epollfd,int listenfd){
     if(clifd==-1)
         cerr<<"Accept Error!"<<endl;
     else{
+#ifdef DEBUG_LOG
         cout<<"Accept a new client: "<<inet_ntoa(cliaddr.sin_addr)<<":"<<cliaddr.sin_port<<endl;
+#endif // DEBUG_LOG
         add_event(epollfd,clifd,EPOLLIN);
     }
 }
@@ -52,7 +56,9 @@ void do_read(int epollfd,int fd,string& content,string& responseheader){
     int msgLen=0;
     char buffer[BUFFER_SIZE];
     memset(buffer,'\0',BUFFER_SIZE);
+#ifdef DEBUG_LOG
     cout<<"Do socket read..."<<endl;
+#endif // DEBUG_LOG
     if((msgLen=recv(fd,buffer,BUFFER_SIZE,0))==-1){
         cerr<<"Error handling incoming request"<<endl;
         close(fd);
@@ -60,7 +66,9 @@ void do_read(int epollfd,int fd,string& content,string& responseheader){
         return;
     }
     else if(msgLen==0){
+#ifdef DEBUG_LOG
         cout<<"Client Closed"<<endl;
+#endif // DEBUG_LOG
         close(fd);
         delete_event(epollfd,fd,EPOLLIN);
     }
@@ -68,16 +76,20 @@ void do_read(int epollfd,int fd,string& content,string& responseheader){
         string method;
         string uri;
         string version;
-        cout<<"Getting http responsehead..."<<endl;
         getRequestHead(buffer,msgLen,method,uri,version);
-        cout<<"Doing http response..."<<endl;
         do_response(fd,method,uri,content,responseheader);
         modify_event(epollfd,fd,EPOLLOUT);
+#ifdef DEBUG_LOG
+        cout<<"Getting http responsehead..."<<endl;
+        cout<<"Doing http response..."<<endl;
+#endif // DEBUG_LOG
         cout<<"Method:"<<method<<endl;
         cout<<"URI:"<<uri<<endl;
         cout<<"HTTP VERSION:"<<version<<endl;
     }
+#ifdef DEBUG_LOG
     cout<<"Socket read success"<<endl;
+#endif // DEBUG_LOG
     cout<<"-----------------------------------"<<endl;
 }
 void do_write(int epollfd,int fd,const string& content,const string& responseheader){
